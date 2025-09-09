@@ -4,50 +4,51 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
-/**
- * Exercise 3.1
- */
 public class Tables {
     private final Connection connection;
 
-    /**
-     * Create an instance of the Tables object using the provided database connection
-     * @param connection The JDBC connection to use
-     */
     public Tables(Connection connection) {
         this.connection = connection;
     }
 
-    /**
-     * 3.1 Complete this method
-     *
-     * Create the Genres table
-     * @return true if the table was successfully created, otherwise false
-     */
     public boolean createGenres() {
-        return false;
+        String sql = """
+            CREATE TABLE Genres (
+                code TEXT NOT NULL PRIMARY KEY,
+                description TEXT NOT NULL
+            )
+        """;
+        return createTable(sql);
     }
 
-    /**
-     * 3.1 Complete this method
-     *
-     * Create the Books table
-     * @return true if the table was successfully created, otherwise false
-     */
-    public boolean createBooks() {
-        return false;
-    }
 
-    /**
-     * 3.1 Complete this method
-     *
-     * Execute a SQL statement containing an SQL command to create a table.
-     * If the SQL statement is not a create statement, it should return false.
-     *
-     * @param sql the SQL statement containing the create command
-     * @return true if the command was successfully executed, else false
-     */
+
+public boolean createBooks() {
+    // Make sure Genres exists first
+    createGenres(); 
+
+    String sql = """
+        CREATE TABLE Books (
+            id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+            title TEXT NOT NULL,
+            genre_code TEXT NOT NULL REFERENCES Genres(code)
+        )
+    """;
+    return createTable(sql);
+}
+
+
     protected boolean createTable(String sql) {
-        return false;
+        if (!sql.trim().toUpperCase().startsWith("CREATE TABLE")) {
+            return false; // only CREATE TABLE allowed
+        }
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.execute();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+        return true;
     }
+
 }

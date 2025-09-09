@@ -50,7 +50,6 @@ public class WebTests {
      * Test for Exercise 4.1
      */
     @Test
-    @Disabled
     public void termsAndConditions() throws IOException {
         Document tsandcs = Jsoup.connect("http://localhost:5000/ts_and_cs.html").get();
 

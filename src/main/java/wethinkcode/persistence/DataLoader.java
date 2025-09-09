@@ -46,7 +46,18 @@ public class DataLoader {
      * @return true if the data was successfully inserted, otherwise false
      */
     public boolean insertGenres() {
-        return false;
+        String sql = "INSERT INTO Genres (code, description) VALUES (?, ?)";
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            for (Genre genre : genres.values()) {
+                stmt.setString(1, genre.getCode());
+                stmt.setString(2, genre.getDescription());
+                stmt.executeUpdate();
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+        return true;
     }
 
     /**
@@ -56,9 +67,24 @@ public class DataLoader {
      *
      * @return true if the data was successfully inserted, otherwise false
      */
-    public List<Book> insertBooks() throws SQLException {
-        return null;
+public List<Book> insertBooks() throws SQLException {
+    String sql = "INSERT INTO Books (title, genre_code) VALUES (?, ?)";
+    
+    try (PreparedStatement stmt = connection.prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS)) {
+        for (Book book : books) {
+            stmt.setString(1, book.getTitle());
+            stmt.setString(2, book.getGenre().getCode()); // use the Genre object
+            stmt.executeUpdate();
+
+            // update the Book object with the generated id using assignId
+            int generatedId = getGeneratedId(stmt);
+            book.assignId(generatedId);
+        }
     }
+    return books;
+}
+
+
 
     /**
      * Get the last id generated from the prepared statement
