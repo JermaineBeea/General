@@ -1,0 +1,52 @@
+2. Call an API for content
+As we progress through the exercise, we’re going to make copies of the previous step. This way, you can go back and forth to see how we implement each step progressively.
+
+So, copy app-1.html to app-2.html, and app-1.js to app-2.js.
+
+We turn our focus to call an API to get some data back that we can then use to dynamically put into the page.
+
+We will use the Fetch API. This also assumes that you have a basic understanding of Promises.
+
+Update app-2.js to fetch the definition of the word code from Free Dictionary API.
+
+public/js/app-2.js
+window.addEventListener("load", () => { 
+    const options = {
+        method: 'GET',                                                          
+    };
+
+    const word = 'code';
+
+    fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${word}`, options)   
+        .then(response => response.json())                                      
+        .then(data => console.log(JSON.stringify(data, null, 2)));              
+});
+Set the options for the HTTP request we’re going to make. In this case, we only need to specify that it will be an HTTP GET.
+Use Fetch to make an HTTP request. Notice that we use the ECMAScript 6 support for string interpolation to insert the word into the URL.
+This is now using a promise to execute a function only when the fetch function completes. Remember that JS is asynchronous and we have no idea when the HTTP request will continue. The only thing we do here is extract the JSON payload from the HTTP response.
+And when the previous promise is fulfilled, we invoke another promise function to process the data that we received. The output of the previous promise function is the input to this promise function. For now, our function just pretty-prints the data as JSON to the console.
+And don’t forget to change app-2.html to load app-2.js.
+
+public/js/app-2.html
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>A Simple SPA</title>
+    <link
+        href="data:image/x-icon;base64,AAABAAEAEBAQAAEABAAoAQAAFgAAACgAAAAQAAAAIAAAAAEABAAAAAAAgAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAOjv4AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABEBEAAAAAEBAAABAQAAAQEREREBAAABEREREREAAAARAREBEAAAAAEREREAAAAAABAAEAAAAAAAEAAQAAAAAAEAAAEAAAAAAAAAAAAAAAAAAAAAAAD//wAA//8AAP//AAD//wAA//8AAPyfAADr6wAA6AsAAOADAADyJwAA+A8AAP3fAAD93wAA++8AAP//AAD//wAA"
+        rel="icon" type="image/x-icon" />                    
+</head>
+
+<body>
+    <h1>All pages will have this heading</h1>
+
+    <div id="app">
+        And the app will dynamically change this content.
+    </div>
+
+    <script type="text/javascript" src="/js/app-2.js"></script> 
+</body>
+
+</html>
+Run your web server again, or refresh your page if your server is still running. Open the developer tools and you should see a JSON object for the word code.

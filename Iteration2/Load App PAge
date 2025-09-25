@@ -1,0 +1,64 @@
+1. Load the App Page
+Start off by creating a directory structure for our SPA app. Open a terminal and go to a directory of your choosing.
+
+$ mkdir -p simple-spa simple-spa/public && cd $_
+$ mkdir -p js css
+You should have a directory structure as follows.
+
+your_directory
+  |
+  |-- simple-spa
+        |
+        |-- public
+            |
+            |-- css
+            |-- js
+Now create an HTML file app-1.html in the simple-spa/public directory and add the following contents.
+
+public/app-1.html
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>A Simple SPA</title>
+
+    <!-- 
+        For fun we use base64 encoding for the favicon of the Space Invaders alien.
+        This also stops the annoying HTTP GET 404 errors for the favicon file.
+        See https://freeinvaders.org/ to kill some productive few minutes ;-)
+    -->
+    <link
+        href="data:image/x-icon;base64,AAABAAEAEBAQAAEABAAoAQAAFgAAACgAAAAQAAAAIAAAAAEABAAAAAAAgAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAOjv4AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABEBEAAAAAEBAAABAQAAAQEREREBAAABEREREREAAAARAREBEAAAAAEREREAAAAAABAAEAAAAAAAEAAQAAAAAAEAAAEAAAAAAAAAAAAAAAAAAAAAAAD//wAA//8AAP//AAD//wAA//8AAPyfAADr6wAA6AsAAOADAADyJwAA+A8AAP3fAAD93wAA++8AAP//AAD//wAA"
+        rel="icon" type="image/x-icon" />                    
+</head>
+
+<body>
+    <h1>All pages will have this heading</h1>
+
+    <div id="app">
+        And the app will dynamically change this content.
+    </div>
+
+    <!--
+        Load our JS code for this page.
+    -->
+    <script type="text/javascript" src="/js/app-1.js"></script> 
+</body>
+
+</html>
+Let’s create app.js in the public/js folder.
+
+public/js/app-1.js
+window.addEventListener("load", () => {                                         
+    console.log("Woohoo! We are running JS in the browser!");                   
+});
+We attach an anoymous function (or lambda) to the event load. This tells the browser to run the attached function when the page is loaded.
+Just write to the console so we know that the script executed.
+Finally, run a web server to serve up the pages. This is super easy. You have already done this with Python and Java. Let’s use Python …​ because we can ;-)
+
+# make sure that you are in the simple-spa directory
+$ python3 -m http.server ./public 5050
+Serving HTTP on 0.0.0.0 port 5050 (http://0.0.0.0:5050/) ...
+Visit the page http://localhost:5050. Open your browser developer tools and look at the console. You should see the message that was printed to the console in app.js.
+
+If you cannot get the above to work, do not continue. Everything after this point assumes you have a working web server and correctly executing JS in the browser.

@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>A Simple SPA</title>
+    <link
+        href="data:image/x-icon;base64,AAABAAEAEBAQAAEABAAoAQAAFgAAACgAAAAQAAAAIAAAAAEABAAAAAAAgAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAOjv4AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABEBEAAAAAEBAAABAQAAAQEREREBAAABEREREREAAAARAREBEAAAAAEREREAAAAAABAAEAAAAAAAEAAQAAAAAAEAAAEAAAAAAAAAAAAAAAAAAAAAAAD//wAA//8AAP//AAD//wAA//8AAPyfAADr6wAA6AsAAOADAADyJwAA+A8AAP3fAAD93wAA++8AAP//AAD//wAA"
+        rel="icon" type="image/x-icon" />
+</head>
+
+<body>
+    <nav>
+        <a href="#/dictionary">Dictionary</a>
+        <a href="#/thesaurus">Thesaurus</a>
+    </nav>
+
+    <br />
+    <div id="app"></div>
+
+    <script id="default-template" type="text/handlebars-template">
+        <p>Click on menu item.</p>
+    </script>
+
+    <script id="dictionary-template" type="text/handlebars-template">
+        <h1>Dictionary</h1>
+        <br/>
+        <form id="lookup-form">
+        <input name="word" type="text" required/>
+        <input name="submit" type="submit" value="Lookup"/>
+        </form>
+        <br/>
+        <div id="results"></div>
+    </script>
+
+    <script id="thesaurus-template" type="text/handlebars-template">
+        <h1>Thesaurus</h1>
+        <p>Coming soon!</p>
+        <br/>
+    </script>
+
+    <script id="results-template" type="text/handlebars-template">
+        <h2>{{word}} &nbsp; {{phonetic}}</h2>
+        <h3>Meanings</h3>
+        <h4>{{partOfSpeech}}</h4>
+        <ol>
+            {{#each definitions}}
+                <li>{{this.definition}}
+            {{/each}}
+        </ol>
+    </script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/handlebars.js/4.7.7/handlebars.min.js"></script>
+
+    <!-- the vanilla-router library-->
+    <script src="https://cdn.jsdelivr.net/npm/vanilla-router@1.2.8/index.min.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.1/dist/jquery.min.js"></script>
+
+    <script src="/js/app-5b.js"></script>
+</body>
+
+</html>

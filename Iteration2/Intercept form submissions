@@ -1,0 +1,87 @@
+4. Intercept form submissions
+Right! Time to move on.
+
+Our app hardcodes the word to lookup. It’s time to allow the user to enter a word using a form.
+
+NOTE
+Copy app-3c.html to app-4,html, app-3c.js to app-4.js and update app-4.html to load app-4.js.
+
+Update index.html to introduce a form to capture the word to lookup. Notice that the form does not have an action attribute.
+
+public/app-4.html
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>A Simple SPA</title>
+    <link
+        href="data:image/x-icon;base64,AAABAAEAEBAQAAEABAAoAQAAFgAAACgAAAAQAAAAIAAAAAEABAAAAAAAgAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAOjv4AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABEBEAAAAAEBAAABAQAAAQEREREBAAABEREREREAAAARAREBEAAAAAEREREAAAAAABAAEAAAAAAAEAAQAAAAAAEAAAEAAAAAAAAAAAAAAAAAAAAAAAD//wAA//8AAP//AAD//wAA//8AAPyfAADr6wAA6AsAAOADAADyJwAA+A8AAP3fAAD93wAA++8AAP//AAD//wAA"
+        rel="icon" type="image/x-icon" />                    
+</head>
+
+<body>
+    <h1>Dictionary App</h1>
+
+    <form id="lookup-form"> 
+        <input name="word" type="text" required/>
+        <input name="submit" type="submit"/>
+    </form>
+    <br/>
+    <div id="app"></div>
+
+    <script id="template" type="text/handlebars-template">
+        <h2>{{word}} &nbsp; {{phonetic}}</h2>                                     
+        <h3>Meanings</h3>
+        <h4>{{partOfSpeech}}</h4>
+        <ol>
+            {{#each definitions}}
+                <li>{{this.definition}}
+            {{/each}}
+        </ol>
+    </script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/handlebars.js/4.7.7/handlebars.min.js"></script>
+    <script type="text/javascript" src="/js/app-4.js"></script> 
+</body>
+
+</html>
+Then update the JS code to capture the content of the form.
+
+public/js/app-4.js
+window.addEventListener("load", () => {
+    const form = document.getElementById("lookup-form");                                          
+
+    form.addEventListener("submit", (event) => {                                                  
+        event.preventDefault();                                                                   
+
+        const data = new FormData(event.target);                                                  
+        const word = data.get("word");
+
+        const options = {
+            method: 'GET',
+        };
+
+        document.getElementById('app').innerHTML = `<p>Searching for <em>${word}'</em>...</p>`;   
+
+        fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${word}`, options)                 
+            .then(response => response.json())
+            .then(data => {
+                data = {
+                    word: data[0].word,
+                    phonetic: data[0].phonetic,
+                    partOfSpeech: data[0].meanings[0].partOfSpeech,
+                    definitions: data[0].meanings[0].definitions
+                };
+                const template = document.getElementById('template').innerText;
+                const compiledFunction = Handlebars.compile(template);
+                document.getElementById('app').innerHTML = compiledFunction(data);
+            });
+    });
+});
+Find the node containing the form.
+This is new! We attach a function to be called when the submit event of the form is raised; i.e. when the submit button is pressed.
+Stop the default action for the event, which in the case of a form submission is to send the data to the server.
+Get the data from the form which is carried in the event object, and fish our the value of the word field.
+This is a user experience adornment which updates the page to tell the user that we are searching for the word. We do this because we don’t know how long the fetch call will take over the network. Leave out this line and notice how you experience the page :-)
+The rest of the code is the same as before.
+Try it out!
