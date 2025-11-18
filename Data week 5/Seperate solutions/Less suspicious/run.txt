@@ -1,0 +1,4 @@
+python3 task1.py --input users.csv --output marketing_format.txt
+python3 task2a.py --input users.csv --output gender_totals.txt
+python3 task2b.py --input users.csv --output customer_totals.txt
+python3 task2c.py --input users.csv --output state_totals.txt

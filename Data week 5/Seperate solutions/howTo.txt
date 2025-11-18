@@ -1,0 +1,12 @@
+Running the pipelines:
+Task 1 - Basic transformations:
+bashpython3 task1.py --input users.csv --output marketing_format.txt
+
+Task 2a - Gender percentages:
+bashpython3 task2a.py --input users.csv --output gender_totals.txt
+
+Task 2b - Customers per date:
+bashpython3 task2b.py --input users.csv --output customer_totals.txt
+
+Task 2c - Customers per state:
+bashpython3 task2c.py --input users.csv --output state_totals.txt
