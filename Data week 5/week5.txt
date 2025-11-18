@@ -1,0 +1,171 @@
+Week 5 Exercise
+In this practical, you will explore Apache Beam’s processing capabilities. We will be using the same users and orders data as in the previous weeks’ notebooks. A concept index for Beam is provided in the Appendix.
+
+Getting started
+To get started, fork the exercise 5 repo from Gitlab.
+
+The repo contains the following:
+
+week5_beam.py : A basic beam pipeline script that you will use to complete the tasks below
+
+requirements.txt : Requirements file for week5_beam.py script
+
+users.csv : Excerpt of customer data
+
+orders.csv : Excerpt of order data
+
+The week5_beam.py script builds a pipeline by reading in an input file, performing a transform, and writing the data to an output file (see the Appendix for more details).
+
+After installing the required packages, you can execute the basic beam pipeline script as:
+
+python3 week5_beam.py --input 'path_to_input_file' --output 'path_to_output_file'
+
+Note that if you specify --output '/PATH/output.txt, running the script will write your pipeline outputs to a file titled ' output.txt-00000-of-00001 ' stored in the specified path. Every time you run the script, the output file will be overwritten unless you specify a different file name.
+
+Questions
+Task 1: Basic transformations
+The first file received (users.csv) contains a data excerpt from the retailer’s accounts database.
+
+They have some questions regarding the current customer profiles, but need the data format to be consistent with other data already in use. They want an output file of the following format:
+
+User id
+
+User
+
+Gender
+
+Age
+
+Address
+
+Date joined
+
+ID
+
+Name Surname
+
+male/female
+
+16-55
+
+City,state,zip code
+
+YYYY-MM-dd
+
+Create a pipeline that does the following:
+
+Read the input file (users.csv) into an initial PCollection
+
+Perform a transform to split each row from the input file into separate elements (e.g. user, gender etc.) so that you may process them.
+
+Perform a transform to change the date format as required
+
+Perform a transform to change the address format as required
+
+Write the formatted data to a file titled marketing_format.txt
+
+NB: You will submit a single pipeline that includes all of the above for Task 1.
+
+An example of the output is:
+
+User;Gender;Age;Address;Date joined
+Amy Sullivan;female;20;Westlake,OH,44145;2020-08-31
+Paige Dixon;female;43;Hicksville,NY,11801;2020-03-22
+Hint: Read up on some of the core PTransforms _in Beam
+
+Task 2: Aggregation
+Now that the data is in the correct format, you need to perform some further transforms to answer some questions the retailer has about their customer profiles regarding the gender composition, number of customers joining on a given day and geographic location of customers.
+
+Expand your pipeline to do the following:
+
+Perform a transform to determine the % split between female and male customers and writes it to the output file gender_totals.txt
+
+An example of the output is:
+
+('gender', {'Female': 0.52, 'Male': 0.48})
+Perform a transform that counts the number of customers that joined on each day and writes it to the output file customer_totals.txt
+
+An example of the output is:
+
+('2020-08-31', 1)
+('2020-03-22', 1)
+('2020-05-28', 2)
+('2020-04-04', 1)
+('2020-05-12', 1)
+Perform a transform that counts the number of customers for each unique state and writes it to the output file state_totals.txt
+
+An example of the output is:
+
+('OH', 6)
+('NY', 10)
+('CT', 2)
+('NJ', 12)
+NB: You will submit three pipelines - one for each of the above sub-tasks in Task 2.
+
+Hint: See Beam map
+
+Concluding questions
+A PCollection’s data set can be bounded or unbounded. Which is the case in this tutorial?
+
+If the retailer were to make some changes so that you have direct access to data that is updated in real-time:
+
+Would the data set be bounded or unbounded?
+
+What additional considerations would be required to create a pipeline?
+
+Appendix
+Concept index
+Concept
+
+Description
+
+Pipeline
+
+A pipeline encapsulates your entire data processing task, from reading input data, to transforming that data, and writing output data. The most basic pipeline consists of a Read transform to create an initial PCollection, a transform to perform some processing and a Write transform.
+
+PCollection
+
+A PCollection represents a distributed data set that your Beam pipeline operates on
+
+PTransform
+
+A PTransform is a data processing operation in your pipeline. A PTransform takes PCollection(s) as input, performs a processing function, and produces output PCollection object(s).
+
+img 0
+Figure 1: Beam pipelinehttps://beam .apache.org/documentation/pipelines/design-your-pipeline/[ Apache Beam]
+Explanation of the week5_beam.py script
+The script takes 2 arguments, namely:
+
+A path to the input file to process (specified with --input)
+
+A path to an output file where the results will be written to (specified with --output)
+
+The script builds a pipeline as follows:
+
+It reads in the input file into an initial PCollection ('read' >> ReadFromText(known_args.input))
+
+It takes the PCollection from the previous step as input and performs a transform, creating a new PCollection ('transform' >> beam.ParDo(Transform()))
+
+Note that in this case, the transform function is not actually changing anything
+
+It writes the data from the PCollection to an output file ('write' >> WriteToText(known_args.output)))
+
+The pipeline is compiled with the following code:
+
+output = (
+              p
+              | 'read' >> ReadFromText(known_args.input)
+              | 'transform' >> beam.ParDo(Transform())
+              | 'write' >> WriteToText(known_args.output))
+copy icon
+Copied!
+Further reading
+Beam’s streaming capabilities
+
+Windowing
+
+Week 5: Data processing
+Week 6: Data governance and real-world applications
+© 2024 WeThinkCode_, All Rights Reserved.
+
+Reuse by explicit written permission only.
