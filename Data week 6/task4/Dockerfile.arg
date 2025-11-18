@@ -1,0 +1,6 @@
+FROM alpine:3.6
+RUN apk add --no-cache python3
+COPY index_arg.py /app/index.py
+WORKDIR /app
+ENTRYPOINT ["python3", "index.py"]
+CMD ["5"]
