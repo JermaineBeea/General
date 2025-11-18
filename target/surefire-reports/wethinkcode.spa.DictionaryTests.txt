@@ -1,0 +1,16 @@
+-------------------------------------------------------------------------------
+Test set: wethinkcode.spa.DictionaryTests
+-------------------------------------------------------------------------------
+Tests run: 1, Failures: 0, Errors: 1, Skipped: 0, Time elapsed: 0.032 s <<< FAILURE! -- in wethinkcode.spa.DictionaryTests
+wethinkcode.spa.DictionaryTests -- Time elapsed: 0.032 s <<< ERROR!
+io.javalin.util.JavalinException: Static resource directory with path: '/public' does not exist. Depending on your setup, empty folders might not get copied to classpath.
+	at io.javalin.jetty.ConfigurableHandler.getResourceBase(JettyResourceHandler.kt:139)
+	at io.javalin.jetty.ConfigurableHandler.<init>(JettyResourceHandler.kt:107)
+	at io.javalin.jetty.JettyResourceHandler.init(JettyResourceHandler.kt:37)
+	at io.javalin.jetty.JettyServer.start(JettyServer.kt:123)
+	at io.javalin.Javalin.start(Javalin.java:123)
+	at wethinkcode.spa.Server.start(Server.java:25)
+	at wethinkcode.spa.WebTestRunner.startServer(WebTestRunner.java:27)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+
