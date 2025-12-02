@@ -256,32 +256,3 @@ services:
   #############################
   # Add you containers etc here
   #############################
-
-  forex-consumer:
-    build: ./forex-consumer
-    container_name: forex-consumer
-    networks:
-      - wtc_cap_one
-    depends_on:
-      postgres:
-        condition: service_healthy
-      redpanda-0:
-        condition: service_healthy
-      redpanda-1:
-        condition: service_healthy
-      redpanda-2:
-        condition: service_healthy
-      forex:
-        condition: service_completed_successfully
-    deploy:
-      restart_policy:
-        condition: on-failure
-        delay: 5s
-        window: 60s
-      resources:
-        limits:
-          cpus: "0.5"
-          memory: "256m"
-        reservations:
-          cpus: "0.25"
-          memory: "128m"
