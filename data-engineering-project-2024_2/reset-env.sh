@@ -9,7 +9,7 @@ docker compose up -d;
 
 if [ "$?" != "0" ]; then
   echo "WARNING: 'docker compose' failed, trying 'docker-compose'...";
-  docker-compose up -d;
+  sudo docker-compose up -d;
   if [ "$?" != "0" ]; then
     echo "ERROR: Failed to start all required containers";
     exit 1
