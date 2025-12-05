@@ -8,6 +8,7 @@ import time
 from pathlib import PosixPath
 import paramiko
 from paramiko import SSHClient
+from confluent_kafka import Producer
 
 import logging
 logger = logging.getLogger(__name__)
@@ -71,6 +72,11 @@ logger.info("Faker data created...")
 cdr_voice_counter = 0
 cdr_data_counter = 0
 
+KAFKA_BROKER = "redpanda-0:19092"
+producer = Producer({
+    "bootstrap.servers": KAFKA_BROKER
+})
+
 def store_idx(idx):
     with open("idx_data.dat", mode='+w') as f:
         f.write(f"{idx}\n")
@@ -101,6 +107,15 @@ def upload_file_to_sftp(local_file, remote_file):
         except Exception as e:
             logger.error(f"An error occurred: {e}")
             time.sleep(1)
+
+
+def stream_to_redpanda(file_path, topic_name):
+    with open(file_path, mode='r') as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            producer.produce(topic_name, value=str(row))
+        producer.flush()
+    logger.info(f"Streamed '{file_path}' to Redpanda topic '{topic_name}'")
 
 def generate_cdr_data(file_datetime, num_records):
     data_types = ['video', 'audio', 'image', 'text', 'application']
@@ -171,6 +186,7 @@ for idx in range(FILE_COUNT):
         logger.debug('Completed writing out cdr_data.csv')
         dest_filename = f"cdr_data_{file_datetime.strftime('%Y%m%d_%H%M%S')}.csv"
         upload_file_to_sftp('cdr_data.csv', f"{dest_filename}")
+        stream_to_redpanda('cdr_data.csv', 'cdr-data')
 
         with open('cdr_voice.csv', mode='w', newline='') as file:
             writer = csv.DictWriter(file, fieldnames=["msisdn", "tower_id", "call_type", "dest_nr", "call_duration_sec", "start_time"])
@@ -180,6 +196,7 @@ for idx in range(FILE_COUNT):
         logger.debug('Completed writing out cdr_voice.csv')
         dest_filename = f"cdr_voice_{file_datetime.strftime('%Y%m%d_%H%M%S')}.csv"
         upload_file_to_sftp('cdr_voice.csv', f"{dest_filename}")
+        stream_to_redpanda('cdr_voice.csv', 'cdr-voice')
 
         store_idx(idx=idx)
         elapsed_time = (time.time() - start_time) * 1000
