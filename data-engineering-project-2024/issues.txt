@@ -1,0 +1,28 @@
+ISSUE  1
+Forex pipeline (to Redpanda)
+Open
+  Issue created 3 days ago by Amohelang Mohlomi
+Consume Forex tick data and stream to forex_raw.
+
+
+ISSUE 2
+TBD 5 — Usage API
+Open
+  Issue created 3 days ago by Amohelang Mohlomi
+Expose REST API for customers to retrieve daily usage summaries from the HVS for a given MSISDN and the API should have basic authentication.
+
+ISSUE 3
+Implement CI/CD pipeline
+Open
+  Issue created 3 days ago by Amohelang Mohlomi
+Install Dependencies
+
+Run Unit Tests
+
+Validate Pipelines
+
+Build Docker Images
+
+Deploy Full System via Docker Compose
+
+
