@@ -72,7 +72,7 @@ logger.info("Faker data created...")
 cdr_voice_counter = 0
 cdr_data_counter = 0
 
-KAFKA_BROKER = "redpanda-0:19092"
+KAFKA_BROKER = "localhost:19092"
 producer = Producer({
     "bootstrap.servers": KAFKA_BROKER
 })
@@ -186,7 +186,7 @@ for idx in range(FILE_COUNT):
         logger.debug('Completed writing out cdr_data.csv')
         dest_filename = f"cdr_data_{file_datetime.strftime('%Y%m%d_%H%M%S')}.csv"
         upload_file_to_sftp('cdr_data.csv', f"{dest_filename}")
-        stream_to_redpanda('cdr_data.csv', 'cdr-data')
+        stream_to_redpanda('cdr_data.csv', 'cdr_data')
 
         with open('cdr_voice.csv', mode='w', newline='') as file:
             writer = csv.DictWriter(file, fieldnames=["msisdn", "tower_id", "call_type", "dest_nr", "call_duration_sec", "start_time"])
@@ -196,7 +196,7 @@ for idx in range(FILE_COUNT):
         logger.debug('Completed writing out cdr_voice.csv')
         dest_filename = f"cdr_voice_{file_datetime.strftime('%Y%m%d_%H%M%S')}.csv"
         upload_file_to_sftp('cdr_voice.csv', f"{dest_filename}")
-        stream_to_redpanda('cdr_voice.csv', 'cdr-voice')
+        stream_to_redpanda('cdr_voice.csv', 'cdr_voice')
 
         store_idx(idx=idx)
         elapsed_time = (time.time() - start_time) * 1000
