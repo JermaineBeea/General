@@ -38,33 +38,6 @@ def require_auth(f):
     return decorated
 
 
-def build_date_filter(params):
-    """Build date filter SQL and parameters."""
-    conditions = []
-    values = []
-    
-    if params.get("start_date"):
-        conditions.append("DATE(start_time) >= %s")
-        values.append(params["start_date"])
-    
-    if params.get("end_date"):
-        conditions.append("DATE(start_time) <= %s")
-        values.append(params["end_date"])
-    
-    return conditions, values
-
-
-def execute_query(query, params):
-    """Execute query and return results."""
-    conn = get_db_connection()
-    cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
-    cur.execute(query, params)
-    results = cur.fetchall()
-    cur.close()
-    conn.close()
-    return results
-
-
 @app.route("/health", methods=["GET"])
 def health():
     """Health check endpoint."""
@@ -80,8 +53,12 @@ def health():
 @require_auth
 def get_usage_summary(msisdn):
     """Get daily usage summary for an MSISDN."""
+    start_date = request.args.get("start_date")
+    end_date = request.args.get("end_date")
+    
     try:
-        date_conditions, date_params = build_date_filter(request.args)
+        conn = get_db_connection()
+        cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
         
         query = """
             SELECT 
@@ -94,18 +71,27 @@ def get_usage_summary(msisdn):
             FROM cdr_data.voice_cdr
             WHERE msisdn = %s
         """
+        params = [msisdn]
         
-        if date_conditions:
-            query += " AND " + " AND ".join(date_conditions)
+        if start_date:
+            query += " AND DATE(start_time) >= %s"
+            params.append(start_date)
+        
+        if end_date:
+            query += " AND DATE(start_time) <= %s"
+            params.append(end_date)
         
         query += " GROUP BY DATE(start_time) ORDER BY date DESC"
         
-        results = execute_query(query, [msisdn] + date_params)
+        cur.execute(query, params)
+        results = cur.fetchall()
+        cur.close()
+        conn.close()
         
         return jsonify({
             "msisdn": msisdn,
-            "start_date": request.args.get("start_date"),
-            "end_date": request.args.get("end_date"),
+            "start_date": start_date,
+            "end_date": end_date,
             "data": [dict(row) for row in results]
         })
         
@@ -118,8 +104,12 @@ def get_usage_summary(msisdn):
 @require_auth
 def get_usage_aggregate(msisdn):
     """Get overall usage summary for an MSISDN."""
+    start_date = request.args.get("start_date")
+    end_date = request.args.get("end_date")
+    
     try:
-        date_conditions, date_params = build_date_filter(request.args)
+        conn = get_db_connection()
+        cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
         
         query = """
             SELECT 
@@ -133,17 +123,26 @@ def get_usage_aggregate(msisdn):
             FROM cdr_data.voice_cdr
             WHERE msisdn = %s
         """
+        params = [msisdn]
         
-        if date_conditions:
-            query += " AND " + " AND ".join(date_conditions)
+        if start_date:
+            query += " AND DATE(start_time) >= %s"
+            params.append(start_date)
         
-        results = execute_query(query, [msisdn] + date_params)
+        if end_date:
+            query += " AND DATE(start_time) <= %s"
+            params.append(end_date)
+        
+        cur.execute(query, params)
+        result = cur.fetchone()
+        cur.close()
+        conn.close()
         
         return jsonify({
             "msisdn": msisdn,
-            "start_date": request.args.get("start_date"),
-            "end_date": request.args.get("end_date"),
-            "summary": dict(results[0]) if results else {}
+            "start_date": start_date,
+            "end_date": end_date,
+            "summary": dict(result) if result else {}
         })
         
     except Exception as e:
