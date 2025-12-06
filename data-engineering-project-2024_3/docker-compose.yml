@@ -1,4 +1,4 @@
-version: '3.8'
+# version: '3.8'
 
 networks:
   wtc_cap_one:
@@ -313,18 +313,13 @@ services:
           memory: "128m"
   #scylladb (HVS)
   scylla:
-    image: scylladb/scylla:latest
+    image: scylladb/scylla:5.4
     container_name: scylla
+    networks:
+      - wtc_cap_one
     ports:
       - "9042:9042"
-    command: --smp 1 --memory 512M
-
-  hvs:
-    image: python:3.11-slim
-    container_name: hvs
-    depends_on:
-      - scylla
+      - "10000:10000"
     volumes:
-      - ./hvs_consumer.py:/app/hvs_consumer.py
-    working_dir: /app
-    command: python3 hvs_consumer.py
+      - ./volumes/data/scylla:/var/lib/scylla
+    command: --smp 1 --memory 512M --overprovisioned 1 --developer-mode 1

@@ -22,6 +22,7 @@ test:
 		echo "No tests found - skipping"; \
 	fi
 
+
 # Build and push images. Expects REGISTRY and TAG env vars.
 # Example: make build-and-push REGISTRY=registry.gitlab.com/group/proj TAG=sha
 build-and-push:
