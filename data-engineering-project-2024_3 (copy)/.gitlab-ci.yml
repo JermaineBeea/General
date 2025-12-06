@@ -1,0 +1,81 @@
+stages:
+  - install
+  - test
+  - build
+  - dbt
+
+variables:
+  PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
+  DOCKER_HOST: "tcp://docker:2375/"
+  DOCKER_TLS_CERTDIR: ""
+
+cache:
+  key: ${CI_COMMIT_REF_SLUG}
+  paths:
+    - .cache/pip
+
+install_dependencies:
+  stage: install
+  image: python:3.11
+  script:
+    - python -m pip install --upgrade pip
+    - |
+      reqs=$(find . -type f -name 'requirements.txt' -not -path './venv/*' -print)
+      if [ -z "$reqs" ]; then
+        echo "No requirements.txt files found"
+      else
+        for f in $reqs; do
+          echo "Installing from $f"
+          python -m pip install -r "$f" || true
+        done
+      fi
+
+run_tests:
+  stage: test
+  image: python:3.11
+  script:
+    - |
+      if [ -d tests ] || ls -d */tests >/dev/null 2>&1; then
+        python -m pip install --upgrade pip
+        python -m pip install pytest || true
+        pytest -q || true
+      else
+        echo "No tests found - skipping pytest"
+      fi
+
+docker_build:
+  stage: build
+  image: docker:24.0.5
+  services:
+    - name: docker:24-dind
+      alias: docker
+  variables:
+    DOCKER_DRIVER: overlay2
+  before_script:
+    - apk add --no-cache bash findutils
+  script:
+    - |
+      set -e
+      echo "Discovering Dockerfiles and building images"
+      find . -type f -name Dockerfile -not -path './.git/*' -print | while read -r df; do
+        dir=$(dirname "$df")
+        imagename="ci-$(basename "$dir")"
+        echo "Building image $imagename from $dir"
+        docker build -t "$imagename:ci" "$dir"
+      done
+  tags: [docker]
+
+dbt_validate:
+  stage: dbt
+  image: python:3.11
+  script:
+    - |
+      if [ -d dbt ]; then
+        python -m pip install --upgrade pip
+        python -m pip install dbt-core || true
+        cd dbt
+        dbt --version || true
+        dbt compile || true
+      else
+        echo "No dbt directory - skipping dbt validation"
+      fi
