@@ -1,0 +1,93 @@
+stages:
+  - install
+  - test
+  - push
+  - dbt
+
+variables:
+  PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
+  DOCKER_TLS_CERTDIR: ""
+
+cache:
+  key: ${CI_COMMIT_REF_SLUG}
+  paths:
+    - .cache/pip
+
+# Install python deps found in the repo
+install_dependencies:
+  stage: install
+  image: python:3.11
+  script:
+    - python -m pip install --upgrade pip
+    - |
+      reqs=$(find . -type f -name 'requirements.txt' -not -path './venv/*' -print)
+      if [ -z "$reqs" ]; then
+        echo "No requirements.txt files found"
+      else
+        for f in $reqs; do
+          echo "Installing from $f"
+          python -m pip install -r "$f" || true
+        done
+      fi
+
+# Run tests when present
+run_tests:
+  stage: test
+  image: python:3.11
+  script:
+    - |
+      if [ -d tests ] || ls -d */tests >/dev/null 2>&1; then
+        python -m pip install --upgrade pip
+        python -m pip install pytest || true
+        pytest -q || true
+      else
+        echo "No tests found - skipping pytest"
+      fi
+
+# Build and push images to GitLab Container Registry
+# Each image is pushed to: $CI_REGISTRY_IMAGE/<service>:<short-sha>
+docker_push:
+  stage: push
+  image: docker:24
+  services:
+    - name: docker:24-dind
+  variables:
+    DOCKER_DRIVER: overlay2
+    DOCKER_TLS_CERTDIR: ""
+  before_script:
+    - apk add --no-cache bash findutils
+    - echo "$CI_REGISTRY_PASSWORD" | docker login -u "$CI_REGISTRY_USER" --password-stdin "$CI_REGISTRY"
+  script:
+    - |
+      set -e
+      echo "Find Dockerfiles, build and push images to $CI_REGISTRY_IMAGE"
+      find . -type f -name Dockerfile -not -path './.git/*' -print | while read -r df; do
+        dir=$(dirname "$df")
+        name=$(basename "$dir")
+        image="$CI_REGISTRY_IMAGE/$name:${CI_COMMIT_SHORT_SHA}"
+        echo "Building $image from $dir"
+        docker build -t "$image" "$dir"
+        echo "Pushing $image"
+        docker push "$image"
+        # also push :latest on main branch for easy viewing
+        if [ "$CI_COMMIT_BRANCH" = "main" ]; then
+          docker tag "$image" "$CI_REGISTRY_IMAGE/$name:latest"
+          docker push "$CI_REGISTRY_IMAGE/$name:latest"
+        fi
+      done
+
+# Lightweight dbt check if dbt exists
+dbt_validate:
+  stage: dbt
+  image: python:3.11
+  script:
+    - |
+      if [ -d dbt ]; then
+        python -m pip install --upgrade pip
+        python -m pip install dbt-core || true
+        cd dbt
+        dbt --version || true
+        dbt compile || true
+      else
+        echo "No dbt directory - skipping dbt validation"
+      fi

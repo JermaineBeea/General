@@ -1,12 +1,11 @@
 stages:
   - install
   - test
-  - build
+  - push
   - dbt
 
 variables:
   PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
-  DOCKER_HOST: "tcp://docker:2375/"
   DOCKER_TLS_CERTDIR: ""
 
 cache:
@@ -14,68 +13,39 @@ cache:
   paths:
     - .cache/pip
 
+# Install python deps found in the repo
 install_dependencies:
   stage: install
   image: python:3.11
   script:
-    - python -m pip install --upgrade pip
-    - |
-      reqs=$(find . -type f -name 'requirements.txt' -not -path './venv/*' -print)
-      if [ -z "$reqs" ]; then
-        echo "No requirements.txt files found"
-      else
-        for f in $reqs; do
-          echo "Installing from $f"
-          python -m pip install -r "$f" || true
-        done
-      fi
+    - make install
 
+# Run tests when present
 run_tests:
   stage: test
   image: python:3.11
   script:
-    - |
-      if [ -d tests ] || ls -d */tests >/dev/null 2>&1; then
-        python -m pip install --upgrade pip
-        python -m pip install pytest || true
-        pytest -q || true
-      else
-        echo "No tests found - skipping pytest"
-      fi
+    - make test
 
-docker_build:
-  stage: build
-  image: docker:24.0.5
+# Build and push images to GitLab Container Registry
+# Each image is pushed to: $CI_REGISTRY_IMAGE/<service>:<short-sha>
+docker_push:
+  stage: push
+  image: docker:24
   services:
     - name: docker:24-dind
-      alias: docker
   variables:
     DOCKER_DRIVER: overlay2
+    DOCKER_TLS_CERTDIR: ""
   before_script:
     - apk add --no-cache bash findutils
+    - echo "$CI_REGISTRY_PASSWORD" | docker login -u "$CI_REGISTRY_USER" --password-stdin "$CI_REGISTRY"
   script:
-    - |
-      set -e
-      echo "Discovering Dockerfiles and building images"
-      find . -type f -name Dockerfile -not -path './.git/*' -print | while read -r df; do
-        dir=$(dirname "$df")
-        imagename="ci-$(basename "$dir")"
-        echo "Building image $imagename from $dir"
-        docker build -t "$imagename:ci" "$dir"
-      done
-  tags: [docker]
+    - make build-and-push REGISTRY="$CI_REGISTRY_IMAGE" TAG="$CI_COMMIT_SHORT_SHA"
 
+# Lightweight dbt check if dbt exists
 dbt_validate:
   stage: dbt
   image: python:3.11
   script:
-    - |
-      if [ -d dbt ]; then
-        python -m pip install --upgrade pip
-        python -m pip install dbt-core || true
-        cd dbt
-        dbt --version || true
-        dbt compile || true
-      else
-        echo "No dbt directory - skipping dbt validation"
-      fi
+    - make dbt-compile
